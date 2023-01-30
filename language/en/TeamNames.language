@@ -1,5 +1,21 @@
 ﻿{
   "strings": {
-    "DD2_TEAMNAME_": "shak pls.",
+    "x_THECOMMITTEE": "The Committee",
+    "x_UESAUTHORIZED": "UES Authorized",
+    "x_PROTECTORS": "Protectors",
+    "x_BOYSCLUB": "Boy's Club",
+    "x_IMMEASURABLENEWCOMERS": "Immeasurable Newcomers",
+    "x_SLICEDCLUB": "Sliced Club",
+    "x_THEKENNEL": "The Kennel",
+    "x_THEUNUSUALSUSPECTS": "The Unusual Suspects",
+    "x_YEEHAW": "Yee Haw",
+    "x_REFORMEDCREW": "Reformed Crew",
+    "x_HEFTYHEFTY": "Hefty Hefty",
+    "x_SISTERSOFBATTLE": "Sisters of Battle",
+    "x_CAMPINGCOHORTS": "Camping Cohorts",
+    "x_ABANDONEDADVENTURERS": "Abandoned Adventurers",
+    "x_POLICEBRUTALITY": "Police Brutality",
+    "x_ROCKANDSTONE": "Rock and Stone",
+    "x_": "",
   }
 }

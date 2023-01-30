@@ -12,30 +12,25 @@ namespace DD2HUD
             // Category: Rank 4
             // Rank 4, RAnk 3, Rank 2, RAnk 1 : TeamName
             #region CaptainBody
-            { new string[]{ "CaptainBody", "CaptainBody", "CaptainBody", "CaptainBody" }, "The Committee" },
-            { new string[]{ "CaptainBody", "CommandoBody", "CommandoBody", "LoaderBody" }, "UES Authorized" },
-            { new string[]{ "CaptainBody", "EngineerBody", "PaladinBody", "EnforcerBody" }, "Protectors" },
-            { new string[]{ "CaptainBody", "MercBody", "CommandoBody", "MercBody" }, "Boy's Club" },
-            // They all have a protection skill: Heal Beacon, Shield, Heal Utility, Shield+Bash
+            { new string[]{ "CaptainBody", "CaptainBody", "CaptainBody", "CaptainBody" }, "THECOMMITTEE" },
+            { new string[]{ "CaptainBody", "CommandoBody", "CommandoBody", "LoaderBody" }, "UESAUTHORIZED" },
+            { new string[]{ "CaptainBody", "EngineerBody", "PaladinBody", "EnforcerBody" }, "PROTECTORS" },
+            { new string[]{ "CaptainBody", "MercBody", "CommandoBody", "MercBody" }, "BOYSCLUB" },
             #endregion
 
             #region CommandoBody
-            { new string[]{ "CommandoBody", "CommandoBody", "CommandoBody", "CommandoBody" }, "Immeasurable Newcomers" },
-            //Commando is the first character unlocked
+            { new string[]{ "CommandoBody", "CommandoBody", "CommandoBody", "CommandoBody" }, "IMMEASURABLENEWCOMERS" },
             #endregion
 
             #region CrocoBody
-            { new string[]{ "CrocoBody", "Bandit2Body", "LoaderBody", "MercBody" }, "Sliced Club" },
-            { new string[]{ "CrocoBody", "CrocoBody", "CrocoBody", "CrocoBody" }, "The Kennel" },
-            //Fight Club, each has a method of dealing melee damage.
+            { new string[]{ "CrocoBody", "Bandit2Body", "LoaderBody", "MercBody" }, "SLICEDCLUB" },
+            { new string[]{ "CrocoBody", "CrocoBody", "CrocoBody", "CrocoBody" }, "THEKENNEL" },
             #endregion
 
             #region Bandit2Body
-            { new string[]{ "Bandit2Body", "CommandoBody", "EnforcerBody", "LoaderBody" }, "The Unusual Suspects" },
-            { new string[]{ "Bandit2Body", "Bandit2Body", "Bandit2Body", "Bandit2Body" }, "Yee Haw" },
-            // The starting team for Risk of Rain 1
-            { new string[]{ "Bandit2Body", "HuntressBody", "LoaderBody", "MercBody" }, "Reformed Crew" },
-            // All survivors who have had a significant change to their kit (Overhaul, Orbs vs arrows, Mobility, Expose)
+            { new string[]{ "Bandit2Body", "CommandoBody", "EnforcerBody", "LoaderBody" }, "THEUNUSUALSUSPECTS" },
+            { new string[]{ "Bandit2Body", "Bandit2Body", "Bandit2Body", "Bandit2Body" }, "YEEHAW" },
+            { new string[]{ "Bandit2Body", "HuntressBody", "LoaderBody", "MercBody" }, "REFORMEDCREW" },
             #endregion
 
             #region CrocoBody
@@ -45,16 +40,14 @@ namespace DD2HUD
             // All survivors authorized to enter the rescue mission
 
             //MageBody
-            { new string[]{ "MageBody", "MageBody", "MageBody", "MageBody" }, "Hefty Hefty" },
-            // ARTIFICER IS ___
-            { new string[]{ "MageBody", "HuntressBody", "LoaderBody", "RailgunnerBody" }, "Sisters of Battle" },
-            // All girls, name from DD2
+            { new string[]{ "MageBody", "MageBody", "MageBody", "MageBody" }, "HEFTYHEFTY" },
+            { new string[]{ "MageBody", "HuntressBody", "LoaderBody", "RailgunnerBody" }, "SISTERSOFBATTLE" },
 
             // Modded
-            { new string[]{ "RailgunnerBody", "SniperClassicBody", "HuntressBody", "ToolbotBody" }, "Camping Cohorts" },
-            { new string[]{ "SniperClassicBody", "MinerModBody", "CHEFBody", "EnforcerBody" }, "Abandoned Adventurers" },
-            { new string[]{ "EnforcerBody", "EnforcerBody", "EnforcerBody", "EnforcerBody" }, "Police Brutality" },
-            { new string[]{ "MinerModBody", "MinerModBody", "MinerModBody", "MinerModBody" }, "Rock and Stone" },
+            { new string[]{ "RailgunnerBody", "SniperClassicBody", "HuntressBody", "ToolbotBody" }, "CAMPINGCOHORTS" },
+            { new string[]{ "SniperClassicBody", "MinerModBody", "CHEFBody", "EnforcerBody" }, "ABANDONEDADVENTURERS" },
+            { new string[]{ "EnforcerBody", "EnforcerBody", "EnforcerBody", "EnforcerBody" }, "POLICEBRUTALITY" },
+            { new string[]{ "MinerModBody", "MinerModBody", "MinerModBody", "MinerModBody" }, "ROCKANDSTONE" },
         };
     }
 }

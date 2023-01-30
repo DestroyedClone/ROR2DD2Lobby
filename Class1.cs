@@ -326,7 +326,7 @@ namespace DD2HUD
                         key[3] == bodyNames[3]
                         )
                     {
-                        return entry.Value;
+                        return Language.GetString(entry.Value);
                     }
                 }
                 return string.Empty;
