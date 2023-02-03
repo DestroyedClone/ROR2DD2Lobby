@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using R2API.Utils;
 using RoR2;
 using RoR2.UI;
@@ -34,17 +35,18 @@ namespace DD2HUD
         private readonly bool DEBUG_addfakenetworkusers = true;
 
         internal static ConfigFile _config;
+        internal static ManualLogSource _logger;
 
         public void Start()
         {
             _config = Config;
+            _logger = Logger;
 
 
             if (DEBUG_addfakenetworkusers)
             {
-                Logger.LogWarning("Debug mode is on, disable before compiling and uploading!");
+                _logger.LogWarning("Debug mode is on, disable before compiling and uploading!");
                 DD2LobbySetupComponent.debug = DEBUG_addfakenetworkusers;
-                On.RoR2.UI.SurvivorIconController.GetLocalUser += SurvivorIconController_GetLocalUser;
             }
             Configuration.SetupConfig();
             ModCompatibility.CheckModCompatibility();
@@ -53,21 +55,6 @@ namespace DD2HUD
             On.RoR2.UI.CharacterSelectController.RebuildLocal += CharacterSelectController_RebuildLocal;
             if (DEBUG_addfakenetworkusers)
                 On.RoR2.UI.CharacterSelectController.OnDisable += CharacterSelectController_OnDisable; //debugging
-
-
-
-            //R2API.Utils.CommandHelper.AddToConsoleWhenReady();
-        }
-
-        private LocalUser SurvivorIconController_GetLocalUser(On.RoR2.UI.SurvivorIconController.orig_GetLocalUser orig, SurvivorIconController self)
-        {
-            try
-            {
-                return orig(self);
-            } catch
-            {
-                return null;
-            }
         }
 
         //replacing SelectSurvivor
@@ -114,7 +101,7 @@ namespace DD2HUD
         private static void CCClearChat(ConCommandArgs args)
         {
             DD2LobbySetupComponent.debug = args.GetArgBool(0);
-            Debug.Log($"dd2lobby_debug_toggle set to {args.GetArgBool(0)}");
+            _logger.LogMessage($"dd2lobby_debug_toggle set to {args.GetArgBool(0)}");
         }
 
         [RoR2.SystemInitializer(dependencies: new System.Type[]
@@ -125,6 +112,7 @@ namespace DD2HUD
         })]
         public static void ConvertBodyNamesToBodyIndices()
         {
+            return;
             foreach (var entry in characterNames_to_teamName)
             {
                 List<BodyIndex> bodyIndices = new List<BodyIndex>();
@@ -144,9 +132,9 @@ namespace DD2HUD
                     text += $"{b}, ";
                 }
                 text += $"{a.Value}";
-                Debug.Log(text);
+                _logger.LogMessage(text);
             }
-            Debug.Log($"Team Count: {bodyIndices_to_teamName.Count}");
+            _logger.LogMessage($"Team Count: {bodyIndices_to_teamName.Count}");
         }
 
         public class FakeNetworkUserMarker : MonoBehaviour
@@ -155,7 +143,7 @@ namespace DD2HUD
             { InstanceTracker.Add(this); }
 
             public void OnDisable()
-            { InstanceTracker.Remove(this); Debug.Log("Destroyed Fake User " + name); }
+            { InstanceTracker.Remove(this); _logger.LogMessage("Destroyed Fake User " + name); }
         }
 
         public class DD2LobbySetupComponent : MonoBehaviour
@@ -243,7 +231,7 @@ namespace DD2HUD
                     };
                     copy.name = bodyName;
                     copy.AddComponent<FakeNetworkUserMarker>();
-                    Debug.Log($"Adding fake NetworkUser as {bodyName}");
+                    _logger.LogMessage($"Adding fake NetworkUser as {bodyName}");
                 }
             }
 
@@ -313,10 +301,11 @@ namespace DD2HUD
                     Debug.Log(output);
                 }*/
 
-                foreach (var name in bodyNames)
-                {
-                    Debug.Log(name);
-                }
+                if (debug)
+                    foreach (var name in bodyNames)
+                    {
+                        _logger.LogMessage(name);
+                    }
 
                 foreach (var entry in characterNames_to_teamName)
                 {
