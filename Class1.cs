@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security;
 using System.Security.Permissions;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using static DD2HUD.Assets;
@@ -228,7 +229,6 @@ namespace DD2HUD
                 if (!debug) return;
                 GameObject meUser = LocalUserManager.GetFirstLocalUser().currentNetworkUser.gameObject;
                 List<string> bodyNamesToCopy = new List<string>(DD2LobbySetupComponent.debug_characters);
-                Debug.Log("Removing first bodyname: " + bodyNamesToCopy[0]);
                 bodyNamesToCopy.RemoveAt(0);
                 foreach (string bodyName in bodyNamesToCopy)
                 {
@@ -345,17 +345,22 @@ namespace DD2HUD
 
             private void RepositionHUD()
             {
+                //Flatten
                 Transform leftHandPanel = characterSelectController.transform.Find("SafeArea/LeftHandPanel (Layer: Main)");
                 leftHandPanel.GetComponent<VerticalLayoutGroup>().enabled = false;
                 leftHandPanel.Find("BorderImage").gameObject.SetActive(false);
                 leftHandPanel.eulerAngles = Vector3.zero;
+                //Move Choices to center middle of screen
                 Transform survivorChoiceGrid = leftHandPanel.Find("SurvivorChoiceGrid, Panel");
                 survivorChoiceGrid.eulerAngles = Vector3.zero; //It Doesn't need, but might as well
                 survivorChoiceGrid.position = new Vector3(0f, -45f, 100f); //def? 302.4 331.1 0 def: -59.8734 43.622 100
                 survivorChoiceGrid.gameObject.SetActive(false);
+                //Move info panel to right of screen
                 Transform survivorInfoPanel = leftHandPanel.Find("SurvivorInfoPanel, Active (Layer: Secondary)");
                 survivorInfoPanel.GetComponent<VerticalLayoutGroup>().enabled = false;
                 survivorInfoPanel.transform.position = new Vector3(30, 32.14879f, 100);
+
+
                 Transform survivorNamePanel = survivorInfoPanel.Find("SurvivorNamePanel");
                 Transform survivorNamePanelClone = null;
                 if (!theTMP || !hgTMP)
@@ -373,15 +378,20 @@ namespace DD2HUD
                  * ContentPanel (Overview, Skills, Loadout)/OverviewScrollPanel/DescriptionPanel, Skill
                  */
 
+
+                /*var skillDescPanel = survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/SkillScrollContainer/DescriptionPanel, Skill");
+                if (skillDescPanel && !skillDescPanel.GetComponent<DD2LobbyDescriptionTracksCursor>())
+                    skillDescPanel.gameObject.AddComponent<DD2LobbyDescriptionTracksCursor>().lobbyDescTransform = skillDescPanel;*/
+
                 Transform skillDescPanel = null;
                 if (compat_ScrollableLobbyUI)
                 {
-                    skillDescPanel = survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/OverviewScrollPanel/DescriptionPanel, Skill");
+                    //skillDescPanel = survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/OverviewScrollPanel/DescriptionPanel, Skill");
+                    skillDescPanel = survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/SkillScrollContainer/DescriptionPanel, Skill");
                 } else
                 {
                     skillDescPanel = survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/SkillPanel/DescriptionPanel, Skill");
                 }
-                //SLUI needs to be nullchecked
                 if (skillDescPanel)
                     skillDescPanel.position = new Vector3(-50, 19.66f, 100);
 
