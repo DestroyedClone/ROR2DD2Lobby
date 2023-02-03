@@ -25,6 +25,7 @@ namespace DD2HUD
     [BepInPlugin("com.DestroyedClone.DD2Lobby", "Darkest Dungeon 2 Lobby", "1.0.0")]
     //[BepInDependency(R2API.R2API.PluginGUID, R2API.R2API.PluginVersion)]
     //[NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
+    [BepInDependency("com.KingEnderBrine.ScrollableLobbyUI", BepInDependency.DependencyFlags.SoftDependency)]
     public class Main : BaseUnityPlugin
     {
         public static Dictionary<BodyIndex[], string> bodyIndices_to_teamName = new Dictionary<BodyIndex[], string>();
@@ -227,6 +228,7 @@ namespace DD2HUD
                 if (!debug) return;
                 GameObject meUser = LocalUserManager.GetFirstLocalUser().currentNetworkUser.gameObject;
                 List<string> bodyNamesToCopy = new List<string>(DD2LobbySetupComponent.debug_characters);
+                Debug.Log("Removing first bodyname: " + bodyNamesToCopy[0]);
                 bodyNamesToCopy.RemoveAt(0);
                 foreach (string bodyName in bodyNamesToCopy)
                 {
@@ -348,8 +350,9 @@ namespace DD2HUD
                 leftHandPanel.Find("BorderImage").gameObject.SetActive(false);
                 leftHandPanel.eulerAngles = Vector3.zero;
                 Transform survivorChoiceGrid = leftHandPanel.Find("SurvivorChoiceGrid, Panel");
-                survivorChoiceGrid.eulerAngles = Vector3.zero; //doesnt need?
-                survivorChoiceGrid.position = new Vector3(0f, -45f, 100f); //def? 302.4 331.1 0
+                survivorChoiceGrid.eulerAngles = Vector3.zero; //It Doesn't need, but might as well
+                survivorChoiceGrid.position = new Vector3(0f, -45f, 100f); //def? 302.4 331.1 0 def: -59.8734 43.622 100
+                survivorChoiceGrid.gameObject.SetActive(false);
                 Transform survivorInfoPanel = leftHandPanel.Find("SurvivorInfoPanel, Active (Layer: Secondary)");
                 survivorInfoPanel.GetComponent<VerticalLayoutGroup>().enabled = false;
                 survivorInfoPanel.transform.position = new Vector3(30, 32.14879f, 100);
@@ -359,8 +362,28 @@ namespace DD2HUD
                     survivorNamePanelClone = Instantiate(survivorNamePanel, characterSelectController.transform);
                 //SkillScrollContainer is missing so
                 //ContentPanel (Overview, Skills, Loadout)/SkillScrollContainer/DescriptionPanel, Skill
-                survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/SkillPanel/DescriptionPanel, Skill").position =
-                    new Vector3(-50, 19.66f, 100);
+
+
+                /* NORMALLY its: ContentPanel (Overview, Skills, Loadout)/SkillPanel/DescriptionPanel, Skill
+                 * but with ScrollableLobbything its:
+                 * ContentPanel (Overview, Skills, Loadout)/OverviewScrollPanel
+                 * ContentPanel (Overview, Skills, Loadout)/LoadoutScrollContainer
+                 * ContentPanel (Overview, Skills, Loadout)/SkillScrollContainer
+                 * NONE! so....
+                 * ContentPanel (Overview, Skills, Loadout)/OverviewScrollPanel/DescriptionPanel, Skill
+                 */
+
+                Transform skillDescPanel = null;
+                if (compat_ScrollableLobbyUI)
+                {
+                    skillDescPanel = survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/OverviewScrollPanel/DescriptionPanel, Skill");
+                } else
+                {
+                    skillDescPanel = survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/SkillPanel/DescriptionPanel, Skill");
+                }
+                //SLUI needs to be nullchecked
+                if (skillDescPanel)
+                    skillDescPanel.position = new Vector3(-50, 19.66f, 100);
 
                 if (!theTMP)
                 {
@@ -421,6 +444,7 @@ namespace DD2HUD
 
                 if (survivorNamePanelClone)
                     Destroy(survivorNamePanelClone.gameObject);
+                survivorChoiceGrid.gameObject.SetActive(true);
             }
 
             private void RepositionCharacterPads()
@@ -464,12 +488,18 @@ namespace DD2HUD
     public class ModCompatibility
     {
         public static bool compat_LobbyAppearanceImprovements = false;
+        public static bool compat_ScrollableLobbyUI = false;
 
         public static void CheckModCompatibility()
         {
             if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.DestroyedClone.LobbyAppearanceImprovements"))
             {
                 compat_LobbyAppearanceImprovements = true;
+            }
+
+            if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.KingEnderBrine.ScrollableLobbyUI"))
+            {
+                compat_ScrollableLobbyUI = true;
             }
         }
     }
