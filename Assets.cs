@@ -14,7 +14,7 @@ namespace DD2HUD
             #region CaptainBody
             { new string[]{ "CaptainBody", "CaptainBody", "CaptainBody", "CaptainBody" }, "4CAPTAIN" },
             { new string[]{ "CaptainBody", "CommandoBody", "CommandoBody", "LoaderBody" }, "UESAUTHORIZED" },
-            { new string[]{ "CaptainBody", "EngineerBody", "PaladinBody", "EnforcerBody" }, "PROTECTORS" },
+            { new string[]{ "CaptainBody", "EngiBody", "RobPaladinBody", "EnforcerBody" }, "PROTECTORS" },
             { new string[]{ "CaptainBody", "MercBody", "CommandoBody", "MercBody" }, "BOYSCLUB" },
             #endregion
 
@@ -70,7 +70,7 @@ namespace DD2HUD
 
             //treebot
             { new string[]{ "TreebotBody", "TreebotBody", "TreebotBody", "TreebotBody" }, "4TREEBOT" },
-            { new string[]{ "TreebotBody", "TreebotBody", "TreebotBody", "TreebotBody" }, "1TREEBOT3CROCO" },
+            { new string[]{ "TreebotBody", "CrocoBody", "CrocoBody", "CrocoBody" }, "1TREEBOT3CROCO" },
 
             //railgunner
             { new string[]{ "RailgunnerBody", "RailgunnerBody", "RailgunnerBody", "RailgunnerBody" }, "4RAILGUNNER" },
@@ -88,7 +88,7 @@ namespace DD2HUD
 
             //Sniper Classic
             { new string[]{ "SniperClassicBody", "SniperClassicBody", "SniperClassicBody", "SniperClassicBody" }, "4SNIPERCLASSIC" },
-            { new string[]{ "SniperClassicBody", "MinerModBody", "CHEFBody", "EnforcerBody" }, "ABANDONEDADVENTURERS" },
+            { new string[]{ "SniperClassicBody", "MinerBody", "CHEF", "EnforcerBody" }, "ABANDONEDADVENTURERS" },
 
             //Enforcer
             { new string[]{ "EnforcerBody", "EnforcerBody", "EnforcerBody", "EnforcerBody" }, "4ENFORCER" },
@@ -96,16 +96,16 @@ namespace DD2HUD
             { new string[]{ "EnforcerBody", "CommandoBody", "CommandoBody", "CommandoBody" }, "1ENFORCER3COMMANDO" },
 
             //Miner
-            { new string[]{ "MinerModBody", "MinerModBody", "MinerModBody", "MinerModBody" }, "4MINERMOD" },
-            { new string[]{ "MinerModBody", "MinerModBody", "MinerModBody", "MercBody" }, "3MINERMOD1MERC" },
+            { new string[]{ "MinerBody", "MinerBody", "MinerBody", "MinerBody" }, "4MINERMOD" },
+            { new string[]{ "MinerBody", "MinerBody", "MinerBody", "MercBody" }, "3MINERMOD1MERC" },
 
             //RobPaladin
             { new string[]{ "RobPaladinBody", "RobPaladinBody", "RobPaladinBody", "RobPaladinBody" }, "4ROBPALADIN" },
             { new string[]{ "RobPaladinBody", "CrocoBody", "CrocoBody", "CrocoBody" }, "1ROBPALADIN3CROCO" },
 
             //chef
-            { new string[]{ "ChefBody", "ChefBody", "ChefBody", "ChefBody" }, "4CHEF" },
-            { new string[]{ "ChefBody", "TreebotBody", "TreebotBody", "TreebotBody" }, "1CHEF3TREEBOT" },
+            { new string[]{ "CHEF", "CHEF", "CHEF", "CHEF" }, "4CHEF" },
+            { new string[]{ "CHEF", "TreebotBody", "TreebotBody", "TreebotBody" }, "1CHEF3TREEBOT" },
 
             //handovercloekd
             { new string[]{ "HANDOverclockedBody", "HANDOverclockedBody", "HANDOverclockedBody", "HANDOverclockedBody" }, "4HANDOVERCLOCKED" },
@@ -114,11 +114,11 @@ namespace DD2HUD
             { new string[]{ "RocketSurvivorBody", "RocketSurvivorBody", "RocketSurvivorBody", "RocketSurvivorBody" }, "4ROCKETSURVIVOR" },
 
             //imposter
-            { new string[]{ "ImpostorBody", "ImpostorBody", "ImpostorBody", "ImpostorBody" }, "Among Us" },
+            { new string[]{ "ImpostorBody", "ImpostorBody", "ImpostorBody", "ImpostorBody" }, "4IMPOSTER" },
 
             //Henry
             { new string[]{ "HenryBody", "HenryBody", "HenryBody", "HenryBody" }, "4HENRY" },
-            { new string[]{ "HenryBody", "ChefBody", "MercBody", "LoaderBody" }, "DOJOFIGHTERS" },
+            { new string[]{ "HenryBody", "CHEF", "MercBody", "LoaderBody" }, "DOJOFIGHTERS" },
 
             //RMOR
             { new string[]{ "RMORBody", "RMORBody", "RMORBody", "RMORBody" }, "4RMOR" },
@@ -126,19 +126,19 @@ namespace DD2HUD
             //Tesla Trooper
             { new string[]{ "TeslaTrooperBody", "TeslaTrooperBody", "TeslaTrooperBody", "TeslaTrooperBody" }, "4TESLATROOPER" },
             { new string[]{ "TeslaTrooperBody", "DesolatorBody", "TeslaTrooperBody", "DesolatorBody" }, "TESDESTESDES" },
-            { new string[]{ "TeslaTrooperBody", "DesolatorBody", "TeslaTrooperBody", "DesolatorBody" }, "2TESLATROOPER2LOADER" },
+            { new string[]{ "TeslaTrooperBody", "TeslaTrooperBody", "LoaderBody", "LoaderBody" }, "2TESLATROOPER2LOADER" },
 
             //Desolator
             { new string[]{ "DesolatorBody", "DesolatorBody", "DesolatorBody", "DesolatorBody" }, "4DESOLATOR" },
 
             //Regigigas
-            { new string[]{ "RegigigasBody", "RegigigasBody", "RegigigasBody", "RegigigasBody" }, "4REGIGIGAS" },
+            { new string[]{ "RegigigasPlayerBody", "RegigigasPlayerBody", "RegigigasPlayerBody", "RegigigasPlayerBody" }, "4REGIGIGAS" },
 
             //Deputy
             { new string[]{ "Deputy", "Deputy", "Deputy", "Deputy" }, "4DEPUTY" },
             { new string[]{ "Deputy", "Deputy", "Bandit2Body", "Bandit2Body" }, "2DEPUTY2BANDIT2SHARED" },
             { new string[]{ "Bandit2Body", "Bandit2Body", "Deputy", "Deputy" }, "2DEPUTY2BANDIT2SHARED" },
-            { new string[]{ "Deputy", "CommandoBody", "MinerModBody", "MinerModBody" }, "STARBOUND" },
+            { new string[]{ "Deputy", "CommandoBody", "MinerBody", "MinerBody" }, "STARBOUND" },
 
             //Deku
             { new string[]{ "DekuBody", "DekuBody", "DekuBody", "DekuBody" }, "4DEKU" },
