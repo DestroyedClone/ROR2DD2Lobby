@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using HG;
 using R2API.Utils;
 using RoR2;
 using RoR2.UI;
@@ -14,6 +15,11 @@ using UnityEngine.UI;
 using static DD2HUD.Assets;
 using static DD2HUD.Configuration;
 using static DD2HUD.ModCompatibility;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using HG;
+using UnityEngine;
 
 [module: UnverifiableCode]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -55,6 +61,20 @@ namespace DD2HUD
             On.RoR2.UI.CharacterSelectController.RebuildLocal += CharacterSelectController_RebuildLocal;
             if (DEBUG_addfakenetworkusers)
                 On.RoR2.UI.CharacterSelectController.OnDisable += CharacterSelectController_OnDisable; //debugging
+            if (cfgModifyCharacterOrder.Value)
+            {
+                On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.UpdateSortedNetworkUsersList += SurvivorMannequinDioramaController_UpdateSortedNetworkUsersList;
+            }
+        }
+
+        private void SurvivorMannequinDioramaController_UpdateSortedNetworkUsersList(On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.orig_UpdateSortedNetworkUsersList orig, RoR2.SurvivorMannequins.SurvivorMannequinDioramaController self)
+        {
+            orig(self);
+            self.sortedNetworkUsers.Clear();
+            for (int i = 0; i < NetworkUser.readOnlyInstancesList.Count; i++)
+            {
+                ListUtils.AddIfUnique<NetworkUser>(self.sortedNetworkUsers, NetworkUser.readOnlyInstancesList[i]);
+            }
         }
 
         //replacing SelectSurvivor
@@ -95,6 +115,12 @@ namespace DD2HUD
                 args.GetArgString(2),
                 args.GetArgString(3)
             };
+            DD2LobbySetupComponent.instance.UpdateTemporaryNetworkUsers();
+            if (DD2LobbySetupComponent.instance)
+            {
+                DD2LobbySetupComponent.instance.UpdateTeamName(NetworkUser.instancesList[0].GetSurvivorPreference().survivorIndex);
+            }
+
         }
 
         [ConCommand(commandName = "dd2lobby_debug_toggle", flags = ConVarFlags.None, helpText = "Dev only Command. true or false")]
@@ -232,6 +258,20 @@ namespace DD2HUD
                     copy.name = bodyName;
                     copy.AddComponent<FakeNetworkUserMarker>();
                     _logger.LogMessage($"Adding fake NetworkUser as {bodyName}");
+                }
+            }
+
+            public void UpdateTemporaryNetworkUsers()
+            {
+                if (!debug) return;
+                List<string> bodyNamesToCopy = new List<string>(DD2LobbySetupComponent.debug_characters);
+                bodyNamesToCopy.RemoveAt(0);
+                var list = InstanceTracker.GetInstancesList<FakeNetworkUserMarker>();
+                for (int i = 0; i < list.Count; i++)
+                {
+                    FakeNetworkUserMarker fakeNetworkUser = list[i];
+                    string newBodyName = bodyNamesToCopy[i];
+                    fakeNetworkUser.GetComponent<NetworkUser>().SetBodyPreference(BodyCatalog.FindBodyIndex(newBodyName));
                 }
             }
 
@@ -506,10 +546,12 @@ namespace DD2HUD
     public static class Configuration
     {
         public static ConfigEntry<bool> cfgModifyCharacterPosition;
+        public static ConfigEntry<bool> cfgModifyCharacterOrder;
 
         public static void SetupConfig()
         {
             cfgModifyCharacterPosition = Main._config.Bind("", "Modify Character Display Positions", true, "If true, then the character positions will be modified in the lobby.");
+            cfgModifyCharacterOrder = Main._config.Bind("", "Modify Character Display Order", true, "If true, then the order of the character displays will be changed to lobby join order.");
         }
     }
 }
