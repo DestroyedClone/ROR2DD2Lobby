@@ -372,7 +372,7 @@ namespace DD2HUD
                 if (skillDescPanel && !skillDescPanel.GetComponent<DD2LobbyDescriptionTracksCursor>())
                     skillDescPanel.gameObject.AddComponent<DD2LobbyDescriptionTracksCursor>().lobbyDescTransform = skillDescPanel;*/
 
-                Transform skillDescPanel = null;
+                Transform skillDescPanel;
                 if (compat_ScrollableLobbyUI)
                 {
                     //skillDescPanel = survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/OverviewScrollPanel/DescriptionPanel, Skill");
