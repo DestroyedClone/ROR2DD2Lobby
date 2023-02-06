@@ -32,13 +32,13 @@ namespace DD2HUD
 {
     [BepInPlugin("com.DestroyedClone.DD2Lobby", "Darkest Dungeon 2 Lobby", "1.0.0")]
     //[BepInDependency(R2API.R2API.PluginGUID, R2API.R2API.PluginVersion)]
-    //[NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
+    [NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
     [BepInDependency("com.KingEnderBrine.ScrollableLobbyUI", BepInDependency.DependencyFlags.SoftDependency)]
     public class Main : BaseUnityPlugin
     {
         public static Dictionary<BodyIndex[], string> bodyIndices_to_teamName = new Dictionary<BodyIndex[], string>();
 
-        private readonly bool DEBUG_addfakenetworkusers = true;
+        public static readonly bool ENABLEDEBUGMODE = true;
 
         internal static ConfigFile _config;
         internal static ManualLogSource _logger;
@@ -49,17 +49,17 @@ namespace DD2HUD
             _logger = Logger;
 
 
-            if (DEBUG_addfakenetworkusers)
+            if (ENABLEDEBUGMODE)
             {
                 _logger.LogWarning("Debug mode is on, disable before compiling and uploading!");
-                DD2LobbySetupComponent.debug = DEBUG_addfakenetworkusers;
+                On.RoR2.Networking.NetworkManagerSystemSteam.OnClientConnect += (s, u, t) => { };
             }
             Configuration.SetupConfig();
             ModCompatibility.CheckModCompatibility();
 
             On.RoR2.UI.CharacterSelectController.Awake += CharacterSelectController_Awake;
             On.RoR2.UI.CharacterSelectController.RebuildLocal += CharacterSelectController_RebuildLocal;
-            if (DEBUG_addfakenetworkusers)
+            if (ENABLEDEBUGMODE)
                 On.RoR2.UI.CharacterSelectController.OnDisable += CharacterSelectController_OnDisable; //debugging
             if (cfgModifyCharacterOrder.Value)
             {
@@ -93,6 +93,8 @@ namespace DD2HUD
         {
             orig(self);
             self.gameObject.AddComponent<DD2LobbySetupComponent>();
+            if (ENABLEDEBUGMODE)
+                self.gameObject.AddComponent<DD2LobbyDebugComponent>();
         }
 
         private void CharacterSelectController_OnDisable(On.RoR2.UI.CharacterSelectController.orig_OnDisable orig, CharacterSelectController self)
@@ -108,26 +110,19 @@ namespace DD2HUD
         [ConCommand(commandName = "dd2lobby_debug_setNetworkBodies", flags = ConVarFlags.None, helpText = "Dev only Command. Rank 1, Rank2, Rank 3, Rank 4. Rank 1 is ignored as its your playerslot")]
         private static void CCChangeNetworkBodies(ConCommandArgs args)
         {
-            DD2LobbySetupComponent.debug_characters = new string[]
+            DD2LobbyDebugComponent.debug_characters = new string[]
             {
                 args.GetArgString(0),
                 args.GetArgString(1),
                 args.GetArgString(2),
                 args.GetArgString(3)
             };
-            DD2LobbySetupComponent.instance.UpdateTemporaryNetworkUsers();
+            DD2LobbyDebugComponent.instance.UpdateTemporaryNetworkUsers();
             if (DD2LobbySetupComponent.instance)
             {
                 DD2LobbySetupComponent.instance.UpdateTeamName(NetworkUser.instancesList[0].GetSurvivorPreference().survivorIndex);
             }
 
-        }
-
-        [ConCommand(commandName = "dd2lobby_debug_toggle", flags = ConVarFlags.None, helpText = "Dev only Command. true or false")]
-        private static void CCClearChat(ConCommandArgs args)
-        {
-            DD2LobbySetupComponent.debug = args.GetArgBool(0);
-            _logger.LogMessage($"dd2lobby_debug_toggle set to {args.GetArgBool(0)}");
         }
 
         [RoR2.SystemInitializer(dependencies: new System.Type[]
@@ -172,21 +167,12 @@ namespace DD2HUD
             { InstanceTracker.Remove(this); _logger.LogMessage("Destroyed Fake User " + name); }
         }
 
-        public class DD2LobbySetupComponent : MonoBehaviour
+        private class DD2LobbyDebugComponent : MonoBehaviour
         {
-            public float age = 0;
-            public bool hasSetup = false;
-
-            public float mp_age = 0;
-            public bool mp_hasSetup = false;
-
+            public static DD2LobbyDebugComponent instance;
             public static bool debug = false;
-            public bool btn_GetTeamName = false;
-            public HGTextMeshProUGUI hgTMP;
-            public CharacterSelectController characterSelectController;
-
-            //public string teamText = "Sussimaximus";
-            public HGTextMeshProUGUI theTMP;
+            public float age = 0;
+            private bool hasSetup = false;
 
             public static string[] debug_characters = new string[]
                 {
@@ -196,28 +182,15 @@ namespace DD2HUD
                     "MercBody"
                 };
 
-            public static DD2LobbySetupComponent instance;
-
-            private void OnEnable()
+            public void OnEnable()
             {
-                mp_hasSetup = RoR2Application.isInSinglePlayer;
                 instance = this;
-                NetworkUser.onLoadoutChangedGlobal += NetworkUser_onLoadoutChangedGlobal;
-                UserProfile.onLoadoutChangedGlobal += UserProfile_onLoadoutChangedGlobal;
             }
-
-            private void OnDisable()
+            public void OnDisable()
             {
                 instance = null;
-                NetworkUser.onLoadoutChangedGlobal -= NetworkUser_onLoadoutChangedGlobal;
-                UserProfile.onLoadoutChangedGlobal -= UserProfile_onLoadoutChangedGlobal;
             }
 
-            private void NetworkUser_onLoadoutChangedGlobal(NetworkUser obj)
-            { instance.NewSetup(); }
-
-            private void UserProfile_onLoadoutChangedGlobal(UserProfile obj)
-            { instance.NewSetup(); }
 
             public ulong GetNetworkName(string bodyName)
             {
@@ -242,7 +215,7 @@ namespace DD2HUD
             {
                 if (!debug) return;
                 GameObject meUser = LocalUserManager.GetFirstLocalUser().currentNetworkUser.gameObject;
-                List<string> bodyNamesToCopy = new List<string>(DD2LobbySetupComponent.debug_characters);
+                List<string> bodyNamesToCopy = new List<string>(DD2LobbyDebugComponent.debug_characters);
                 bodyNamesToCopy.RemoveAt(0);
                 foreach (string bodyName in bodyNamesToCopy)
                 {
@@ -264,7 +237,7 @@ namespace DD2HUD
             public void UpdateTemporaryNetworkUsers()
             {
                 if (!debug) return;
-                List<string> bodyNamesToCopy = new List<string>(DD2LobbySetupComponent.debug_characters);
+                List<string> bodyNamesToCopy = new List<string>(DD2LobbyDebugComponent.debug_characters);
                 bodyNamesToCopy.RemoveAt(0);
                 var list = InstanceTracker.GetInstancesList<FakeNetworkUserMarker>();
                 for (int i = 0; i < list.Count; i++)
@@ -277,12 +250,62 @@ namespace DD2HUD
 
             private void FixedUpdate()
             {
+                if (hasSetup) return;
+                age += Time.fixedDeltaTime;
+                if (age > 0.35f)
+                {
+                    CreateTemporaryNetworkUsers();
+                    hasSetup = true;
+                }
+            }
+
+        }
+
+        public class DD2LobbySetupComponent : MonoBehaviour
+        {
+            public float age = 0;
+            public bool hasSetup = false;
+
+            public float mp_age = 0;
+            public bool mp_hasSetup = false;
+
+            public bool btn_GetTeamName = false;
+            public HGTextMeshProUGUI hgTMP;
+            public CharacterSelectController characterSelectController;
+
+            //public string teamText = "Sussimaximus";
+            public HGTextMeshProUGUI theTMP;
+
+            public static DD2LobbySetupComponent instance;
+
+            private void OnEnable()
+            {
+                mp_hasSetup = RoR2Application.isInSinglePlayer;
+                instance = this;
+                NetworkUser.onLoadoutChangedGlobal += NetworkUser_onLoadoutChangedGlobal;
+                UserProfile.onLoadoutChangedGlobal += UserProfile_onLoadoutChangedGlobal;
+            }
+
+            private void OnDisable()
+            {
+                instance = null;
+                NetworkUser.onLoadoutChangedGlobal -= NetworkUser_onLoadoutChangedGlobal;
+                UserProfile.onLoadoutChangedGlobal -= UserProfile_onLoadoutChangedGlobal;
+            }
+
+            private void NetworkUser_onLoadoutChangedGlobal(NetworkUser obj)
+            { instance.NewSetup(); }
+
+            private void UserProfile_onLoadoutChangedGlobal(UserProfile obj)
+            { instance.NewSetup(); }
+
+            private void FixedUpdate()
+            {
                 if (!hasSetup)
                 {
                     age += Time.fixedDeltaTime;
                     if (age > 0.35f)
                     {
-                        CreateTemporaryNetworkUsers();
                         NewSetup();
                         hasSetup = true;
                     }
@@ -309,7 +332,7 @@ namespace DD2HUD
 
                 List<string> bodyNames = new List<string>();
                 List<BodyIndex> bodyIndices = new List<BodyIndex>();
-                if (!debug)
+                if (!DD2HUD.Main.ENABLEDEBUGMODE)
                 {
                     if (networkUsers.Count <= 3)
                     {
@@ -323,8 +346,8 @@ namespace DD2HUD
                 }
                 else
                 {
-                    bodyNames = debug_characters.ToList();
-                    foreach (var bodyName in debug_characters)
+                    bodyNames = DD2LobbyDebugComponent.debug_characters.ToList();
+                    foreach (var bodyName in DD2LobbyDebugComponent.debug_characters)
                     {
                         bodyIndices.Add(BodyCatalog.FindBodyIndex(bodyName));
                     }
@@ -341,7 +364,7 @@ namespace DD2HUD
                     Debug.Log(output);
                 }*/
 
-                if (debug)
+                if (ENABLEDEBUGMODE)
                     foreach (var name in bodyNames)
                     {
                         _logger.LogMessage(name);
@@ -372,7 +395,7 @@ namespace DD2HUD
 
             //public Transform difficultySection;
 
-            private void RepositionHUD()
+            private void InitialHUDSetup()
             {
                 //Flatten
                 Transform leftHandPanel = characterSelectController.transform.Find("SafeArea/LeftHandPanel (Layer: Main)");
@@ -462,8 +485,10 @@ namespace DD2HUD
                 readyPanel.position = new Vector3(80, -45, 100);
                 if (!hgTMP)
                 {
-                    Transform teamText = UnityEngine.Object.Instantiate(survivorNamePanelClone, readyPanel.Find("ReadyButton"));
-                    teamText.localPosition = new Vector3(-730, 20, 0);
+                    Transform teamText = UnityEngine.Object.Instantiate(survivorNamePanelClone, readyPanel.parent); //really? you looked 2 in just to look 1 up, when you could just look 1 in???????
+                    teamText.GetComponent<UnityEngine.UI.LayoutElement>().enabled = false;
+                    teamText.localPosition = new Vector3(283, -370, 0);
+                    teamText.localScale = Vector3.one * 2.5f;
                     teamText.name = "TeamText";
                     hgTMP = teamText.Find("SurvivorName").GetComponent<HGTextMeshProUGUI>();
                 }
@@ -481,23 +506,33 @@ namespace DD2HUD
                 }*/
                 leftHandPanel.Find("BlurPanel").gameObject.SetActive(false);
 
+                var readyButton = characterSelectController.readyButton.transform;
+                readyButton.localScale = new Vector3(0.75f, 1f, 1f);
+                readyButton.localPosition = new Vector3(450, -500, 0);
+
+                var survivorName = characterSelectController.survivorName;
+
+
                 if (survivorNamePanelClone)
                     Destroy(survivorNamePanelClone.gameObject);
                 survivorChoiceGrid.gameObject.SetActive(true);
             }
 
+            private void RepossitionHUD()
+            {
+
+            }
+
             private void RepositionCharacterPads()
             {
                 if (!cfgModifyCharacterPosition.Value) return;
-                if (!debug && NetworkUser.readOnlyLocalPlayersList.Count <= 1)
+                if (!ENABLEDEBUGMODE && NetworkUser.readOnlyLocalPlayersList.Count <= 1)
                 {
                     return;
                 }
                 var survivorMannequinDiorama = GameObject.Find("SurvivorMannequinDiorama");
                 survivorMannequinDiorama.transform.rotation = Quaternion.Euler(new Vector3(0, 195, 0));
                 //oldrot= 0 254.9986 0
-
-
 
                 float index = 0;
                 float xoffset = 1f;
@@ -512,7 +547,7 @@ namespace DD2HUD
             public void NewSetup(SurvivorIndex survivorIndex = SurvivorIndex.None)
             {
                 characterSelectController = gameObject.GetComponent<CharacterSelectController>();
-                RepositionHUD();
+                InitialHUDSetup();
                 RepositionCharacterPads();
                 UpdateTeamName(survivorIndex);
             }
