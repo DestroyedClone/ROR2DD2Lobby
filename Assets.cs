@@ -163,7 +163,15 @@ namespace DD2HUD
             { new string[]{ "PathfinderBody", "PathfinderBody", "PathfinderBody", "PathfinderBody" }, "4PATHFINDER" },
 
             //Heretic
-            { new string[] { "HereticBody", "HereticBody", "HereticBody", "HereticBody" }, "4HERETIC" }
+            { new string[] { "HereticBody", "HereticBody", "HereticBody", "HereticBody" }, "4HERETIC" },
+
+            //Dancer
+            { new string[] { "DancerBody", "DancerBody", "DancerBody", "DancerBody" }, "4DANCER" },
+            { new string[] { "DancerBody", "DancerBody", "DeputyBody", "DeputyBody" }, "2DANCER2DEPUTY" },
+            { new string[] { "DancerBody", "DeputyBody", "DancerBody", "DeputyBody" }, "DANCERDEPUTYDANCERDEPUTY" },
+            { new string[] { "DancerBody", "DeputyBody", "HuntressBody", "HuntressBody" }, "DANCERDANCERHUNTRESSHUNTRESS" },
+            { new string[] { "DancerBody", "ToolbotBody", "HANDOverclockedBody", "EngiBody" }, "TOOLTIME" },
+
         };
     }
 }
