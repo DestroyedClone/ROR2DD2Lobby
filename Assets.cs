@@ -49,7 +49,7 @@ namespace DD2HUD
             //huntress
             { new string[]{ "HuntressBody", "HuntressBody", "HuntressBody", "HuntressBody" }, "4HUNTRESS" },
             { new string[]{ "HuntressBody", "CrocoBody", "CrocoBody", "CrocoBody" }, "1HUNTRESS3CROCO" },
-            { new string[]{ "HuntressBody", "CommandoBody", "HuntressBody", "CommandoBody" }, "DD2LOBBY_REDLINERAIDERS" },
+            { new string[]{ "HuntressBody", "CommandoBody", "HuntressBody", "CommandoBody" }, "REDLINERAIDERS" },
             { new string[]{ "HuntressBody", "CaptainBody", "CaptainBody", "CaptainBody" }, "1HUNTRESS3CAPTAIN" },
 
             //loader
@@ -167,9 +167,9 @@ namespace DD2HUD
 
             //Dancer
             { new string[] { "DancerBody", "DancerBody", "DancerBody", "DancerBody" }, "4DANCER" },
-            { new string[] { "DancerBody", "DancerBody", "DeputyBody", "DeputyBody" }, "2DANCER2DEPUTY" },
-            { new string[] { "DancerBody", "DeputyBody", "DancerBody", "DeputyBody" }, "DANCERDEPUTYDANCERDEPUTY" },
-            { new string[] { "DancerBody", "DeputyBody", "HuntressBody", "HuntressBody" }, "DANCERDANCERHUNTRESSHUNTRESS" },
+            { new string[] { "DancerBody", "DancerBody", "Deputy", "Deputy" }, "2DANCER2DEPUTY" },
+            { new string[] { "DancerBody", "Deputy", "DancerBody", "Deputy" }, "DANCERDEPUTYDANCERDEPUTY" },
+            { new string[] { "DancerBody", "Deputy", "HuntressBody", "HuntressBody" }, "DANCERDANCERHUNTRESSHUNTRESS" },
             { new string[] { "DancerBody", "ToolbotBody", "HANDOverclockedBody", "EngiBody" }, "TOOLTIME" },
 
         };
