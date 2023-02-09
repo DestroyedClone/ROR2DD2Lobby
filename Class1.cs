@@ -9,17 +9,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security;
 using System.Security.Permissions;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using static DD2HUD.Assets;
 using static DD2HUD.Configuration;
 using static DD2HUD.ModCompatibility;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using HG;
-using UnityEngine;
 
 [module: UnverifiableCode]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -56,17 +51,44 @@ namespace DD2HUD
             Configuration.SetupConfig();
             ModCompatibility.CheckModCompatibility();
 
-            On.RoR2.UI.CharacterSelectController.Awake += CharacterSelectController_Awake;
+            On.RoR2.UI.CharacterSelectController.Awake += AddComponentToCharSelectController;
             On.RoR2.UI.CharacterSelectController.RebuildLocal += CharacterSelectController_RebuildLocal;
             if (ENABLEDEBUGMODE)
                 On.RoR2.UI.CharacterSelectController.OnDisable += CharacterSelectController_OnDisable; //debugging
             if (cfgModifyCharacterOrder.Value)
             {
-                On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.UpdateSortedNetworkUsersList += SurvivorMannequinDioramaController_UpdateSortedNetworkUsersList;
+                On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.UpdateSortedNetworkUsersList += SortMannequinsByRealOrder;
             }
-            //On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.UpdateMannequins += SurvivorMannequinDioramaController_UpdateMannequins;
-            On.RoR2.UI.MainMenu.MainMenuController.Start += MainMenuController_Start;
+            On.RoR2.UI.MainMenu.MainMenuController.Update += MainMenuController_Update;
             On.RoR2.SurvivorMannequins.SurvivorMannequinSlotController.OnLoadoutChangedGlobal += UpdateTeamName;
+        }
+
+        private void AddComponentToCharSelectController(On.RoR2.UI.CharacterSelectController.orig_Awake orig, CharacterSelectController self)
+        {
+            orig(self);
+            self.gameObject.AddComponent<DD2LobbySetupComponent>();
+            if (ENABLEDEBUGMODE)
+                self.gameObject.AddComponent<DD2LobbyDebugComponent>();
+        }
+
+        //replacing SelectSurvivor
+        private void CharacterSelectController_RebuildLocal(On.RoR2.UI.CharacterSelectController.orig_RebuildLocal orig, CharacterSelectController self)
+        {
+            orig(self);
+
+            if (DD2LobbySetupComponent.instance)
+            {
+                DD2LobbySetupComponent.instance.UpdateSubtitleText();
+            }
+        }
+
+        private void MainMenuController_Update(On.RoR2.UI.MainMenu.MainMenuController.orig_Update orig, RoR2.UI.MainMenu.MainMenuController self)
+        {
+            orig(self);
+            if (Input.GetKey(KeyCode.P))
+            {
+                RoR2.Console.instance.SubmitCmd(null, @"connect localhost:7777", true);
+            }
         }
 
         private void UpdateTeamName(On.RoR2.SurvivorMannequins.SurvivorMannequinSlotController.orig_OnLoadoutChangedGlobal orig, RoR2.SurvivorMannequins.SurvivorMannequinSlotController self, NetworkUser networkUser)
@@ -74,34 +96,11 @@ namespace DD2HUD
             orig(self, networkUser);
             if (DD2LobbySetupComponent.instance)
             {
-                DD2LobbySetupComponent.instance.UpdateTeamName(NetworkUser.instancesList[0].GetSurvivorPreference().survivorIndex);
+                DD2LobbySetupComponent.instance.UpdateTeamName();
             }
         }
 
-        private void MainMenuController_Start(On.RoR2.UI.MainMenu.MainMenuController.orig_Start orig, RoR2.UI.MainMenu.MainMenuController self)
-        {
-            orig(self);
-            var button = GameObject.Find(@"MainMenu/MENU: More/MoreMenu/Main Panel/InfoPanel/HeaderContainer/Header (JUICED)/HGButton/GenericHeaderButton (Music)");
-            var copy = UnityEngine.Object.Instantiate(button);
-            copy.transform.parent = GameObject.Find(@"MainMenu").transform;
-            copy.GetComponent<ConsoleFunctions>();
-        }
-
-        private void SurvivorMannequinDioramaController_UpdateMannequins(On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.orig_UpdateMannequins orig, RoR2.SurvivorMannequins.SurvivorMannequinDioramaController self)
-        {
-            orig(self);
-            for (int i = 0; i < self.mannequinSlots.Length; i++)
-            {
-                RoR2.SurvivorMannequins.SurvivorMannequinSlotController mannequin = self.mannequinSlots[i];
-                mannequin.gameObject.name = i.ToString();
-                if (i + 1 <= self.mannequinSlots.Length)
-                {
-                    mannequin.name = $"{ i} Dist: {Vector3.Distance(mannequin.transform.position, self.mannequinSlots[i + 1].transform.position)}";
-                }
-            }
-        }
-
-        private void SurvivorMannequinDioramaController_UpdateSortedNetworkUsersList(On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.orig_UpdateSortedNetworkUsersList orig, RoR2.SurvivorMannequins.SurvivorMannequinDioramaController self)
+        private void SortMannequinsByRealOrder(On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.orig_UpdateSortedNetworkUsersList orig, RoR2.SurvivorMannequins.SurvivorMannequinDioramaController self)
         {
             orig(self);
             self.sortedNetworkUsers.Clear();
@@ -117,26 +116,6 @@ namespace DD2HUD
             }*/
         }
 
-        //replacing SelectSurvivor
-        private void CharacterSelectController_RebuildLocal(On.RoR2.UI.CharacterSelectController.orig_RebuildLocal orig, CharacterSelectController self)
-        {
-            orig(self);
-
-            if (DD2LobbySetupComponent.instance)
-            {
-                DD2LobbySetupComponent.instance.RepositionHUD();
-                DD2LobbySetupComponent.instance.UpdateSubtitleText();
-            }
-        }
-
-        //replacing Start
-        private void CharacterSelectController_Awake(On.RoR2.UI.CharacterSelectController.orig_Awake orig, CharacterSelectController self)
-        {
-            orig(self);
-            self.gameObject.AddComponent<DD2LobbySetupComponent>();
-            if (ENABLEDEBUGMODE)
-                self.gameObject.AddComponent<DD2LobbyDebugComponent>();
-        }
 
         private void CharacterSelectController_OnDisable(On.RoR2.UI.CharacterSelectController.orig_OnDisable orig, CharacterSelectController self)
         {
@@ -159,44 +138,11 @@ namespace DD2HUD
                 args.GetArgString(3)
             };
             DD2LobbyDebugComponent.instance.UpdateTemporaryNetworkUsers();
-            if (DD2LobbySetupComponent.instance)
+            /*if (DD2LobbySetupComponent.instance)
             {
                 DD2LobbySetupComponent.instance.UpdateTeamName(NetworkUser.instancesList[0].GetSurvivorPreference().survivorIndex);
-            }
+            }*/
 
-        }
-
-        [RoR2.SystemInitializer(dependencies: new System.Type[]
-        {
-            typeof(BodyCatalog),
-            typeof(RoR2.SurvivorCatalog),
-            typeof(RoR2.MasterCatalog),
-        })]
-        public static void ConvertBodyNamesToBodyIndices()
-        {
-            return;
-            foreach (var entry in characterNames_to_teamName)
-            {
-                List<BodyIndex> bodyIndices = new List<BodyIndex>();
-                foreach (var bodyName in entry.Key)
-                {
-                    bodyIndices.Add(BodyCatalog.FindBodyIndex(bodyName));
-                }
-                bodyIndices_to_teamName.Add(bodyIndices.ToArray(), entry.Value);
-            }
-
-            var index = 0;
-            foreach (var a in bodyIndices_to_teamName)
-            {
-                var text = $"{index} : ";
-                foreach (var b in a.Key)
-                {
-                    text += $"{b}, ";
-                }
-                text += $"{a.Value}";
-                _logger.LogMessage(text);
-            }
-            _logger.LogMessage($"Team Count: {bodyIndices_to_teamName.Count}");
         }
 
         public class FakeNetworkUserMarker : MonoBehaviour
@@ -233,21 +179,21 @@ namespace DD2HUD
 
             public ulong GetNetworkName(string bodyName)
             {
-                switch (bodyName)
+                return bodyName switch
                 {
-                    case "CrocoBody": return 76561198124912729;
-                    case "MageBody": return 76561198348262420;
-                    case "Bandit2Body": return 76561198064142548;
-                    case "Captain": return 76561198177832603;
-                    case "CommandoBody": return 76561198115125395;
-                    case "EngineerBody": return 76561197988953445;
-                    case "HuntressBody": return 76561198210922492;
-                    case "LoaderBody": return 76561198246537066;
-                    case "MercBody": return 76561198198967470;
-                    case "ToolbotBody": return 76561198069591654;
-                    case "TreebotBody": return 76561198267390855;
-                    default: return 76561197960447933;
-                }
+                    "CrocoBody" => 76561198124912729,
+                    "MageBody" => 76561198348262420,
+                    "Bandit2Body" => 76561198064142548,
+                    "Captain" => 76561198177832603,
+                    "CommandoBody" => 76561198115125395,
+                    "EngineerBody" => 76561197988953445,
+                    "HuntressBody" => 76561198210922492,
+                    "LoaderBody" => 76561198246537066,
+                    "MercBody" => 76561198198967470,
+                    "ToolbotBody" => 76561198069591654,
+                    "TreebotBody" => 76561198267390855,
+                    _ => 76561197960447933,
+                };
             }
 
             public void CreateTemporaryNetworkUsers()
@@ -292,20 +238,19 @@ namespace DD2HUD
 
         public class DD2LobbySetupComponent : MonoBehaviour
         {
+            public static DD2LobbySetupComponent instance;
+
             public float age = 0;
             public bool hasSetup = false;
 
             public float mp_age = 0;
             public bool mp_hasSetup = false;
 
-            public bool btn_GetTeamName = false;
             public HGTextMeshProUGUI hgTMP;
             public CharacterSelectController characterSelectController;
 
             //public string teamText = "Sussimaximus";
             public HGTextMeshProUGUI theTMP;
-
-            public static DD2LobbySetupComponent instance;
 
             //For RepositionHUD
             public HGTextMeshProUGUI subtitleTextTMP;
@@ -326,10 +271,10 @@ namespace DD2HUD
             }
 
             private void NetworkUser_onLoadoutChangedGlobal(NetworkUser obj)
-            { instance.NewSetup(); }
+            { instance.UpdateReconfigurations(); }
 
             private void UserProfile_onLoadoutChangedGlobal(UserProfile obj)
-            { instance.NewSetup(); }
+            { instance.UpdateReconfigurations(); }
 
             private void FixedUpdate()
             {
@@ -338,9 +283,9 @@ namespace DD2HUD
                     age += Time.fixedDeltaTime;
                     if (age > 0.35f)
                     {
-                        NewSetup();
+                        UpdateReconfigurations();
                         hasSetup = true;
-                        DD2LobbyDebugComponent.instance?.CreateTemporaryNetworkUsers();
+                        if (DD2LobbyDebugComponent.instance) DD2LobbyDebugComponent.instance.CreateTemporaryNetworkUsers();
                     }
                 }
                 if (!mp_hasSetup)
@@ -348,18 +293,13 @@ namespace DD2HUD
                     mp_age += Time.fixedDeltaTime;
                     if (age > 0.75f)
                     {
-                        NewSetup();
+                        UpdateReconfigurations();
                         mp_hasSetup = true;
                     }
                 }
-                if (btn_GetTeamName)
-                {
-                    //GetTeamName();
-                    btn_GetTeamName = false;
-                }
             }
 
-            private string GetTeamName2(SurvivorIndex firstSurvivorIndex = SurvivorIndex.None)
+            private string GetTeamNameFromSurvivorIndex(SurvivorIndex firstSurvivorIndex = SurvivorIndex.None)
             {
                 var networkUsers = NetworkUser.readOnlyInstancesList;
 
@@ -417,13 +357,6 @@ namespace DD2HUD
                     }
                 }
                 return string.Empty;
-            }
-
-            private void UpdateTeamText(string newText)
-            {
-                hgTMP.enabled = false;
-                hgTMP.text = newText;
-                hgTMP.enabled = true;
             }
 
             //public Transform difficultySection;
@@ -554,7 +487,7 @@ namespace DD2HUD
                     Destroy(survivorNamePanelClone.gameObject);
                 survivorChoiceGrid.gameObject.SetActive(true);
 
-                RepositionHUD();
+                //RepositionHUD();
             }
 
             public void RepositionHUD()
@@ -572,11 +505,14 @@ namespace DD2HUD
                     //so its oneyl a small repeat
                     LocalUser localUser = characterSelectController.localUser;
                     NetworkUser networkUser = localUser?.currentNetworkUser;
-                    if (!networkUser) return;
-                    SurvivorDef survivorDef = networkUser ? networkUser.GetSurvivorPreference() : null;
-                    CharacterSelectController.BodyInfo bodyInfo = new CharacterSelectController.BodyInfo(SurvivorCatalog.GetBodyIndexFromSurvivorIndex(survivorDef ? survivorDef.survivorIndex : SurvivorIndex.None));
-
-                    subtitleTextTMP.text = bodyInfo.bodyPrefabBodyComponent ? Language.GetString(bodyInfo.bodyPrefabBodyComponent.subtitleNameToken) : String.Empty;
+                    if (networkUser)
+                    {
+                        SurvivorDef survivorDef = networkUser ? networkUser.GetSurvivorPreference() : null;
+                        CharacterSelectController.BodyInfo bodyInfo = new CharacterSelectController.BodyInfo(SurvivorCatalog.GetBodyIndexFromSurvivorIndex(survivorDef ? survivorDef.survivorIndex : SurvivorIndex.None));
+                        subtitleTextTMP.text = bodyInfo.bodyPrefabBodyComponent ? Language.GetString(bodyInfo.bodyPrefabBodyComponent.subtitleNameToken) : String.Empty;
+                        return;
+                    }
+                    subtitleTextTMP.text = string.Empty;
                 }
             }
 
@@ -601,17 +537,34 @@ namespace DD2HUD
                 }
             }
 
-            public void NewSetup(SurvivorIndex survivorIndex = SurvivorIndex.None)
+            public void UpdateReconfigurations()
             {
                 characterSelectController = gameObject.GetComponent<CharacterSelectController>();
                 InitialHUDSetup();
                 RepositionCharacterPads();
-                UpdateTeamName(survivorIndex);
+                UpdateTeamName();
             }
 
-            public void UpdateTeamName(SurvivorIndex survivorIndex = SurvivorIndex.None)
+            public void UpdateTeamName()
             {
-                UpdateTeamText(GetTeamName2(survivorIndex));
+                var firstNetworkUser = NetworkUser.instancesList[0];
+                if (firstNetworkUser)
+                {
+                    var survivorPreferenceDef = firstNetworkUser.GetSurvivorPreference();
+                    if (survivorPreferenceDef)
+                    {
+                        SetTeamText(GetTeamNameFromSurvivorIndex(survivorPreferenceDef.survivorIndex));
+                    }
+                }
+                SetTeamText(String.Empty);
+            }
+
+            public void SetTeamText(string teamName)
+            {
+                if (!hgTMP) return;
+                hgTMP.enabled = false;
+                hgTMP.text = teamName;
+                hgTMP.enabled = true;
             }
         }
     }
