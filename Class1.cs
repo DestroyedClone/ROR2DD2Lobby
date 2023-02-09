@@ -38,7 +38,7 @@ namespace DD2HUD
     {
         public static Dictionary<BodyIndex[], string> bodyIndices_to_teamName = new Dictionary<BodyIndex[], string>();
 
-        public static readonly bool ENABLEDEBUGMODE = true;
+        public static readonly bool ENABLEDEBUGMODE = false;
 
         internal static ConfigFile _config;
         internal static ManualLogSource _logger;
@@ -48,11 +48,10 @@ namespace DD2HUD
             _config = Config;
             _logger = Logger;
 
-
+            On.RoR2.Networking.NetworkManagerSystemSteam.OnClientConnect += (s, u, t) => { };
             if (ENABLEDEBUGMODE)
             {
                 _logger.LogWarning("Debug mode is on, disable before compiling and uploading!");
-                On.RoR2.Networking.NetworkManagerSystemSteam.OnClientConnect += (s, u, t) => { };
             }
             Configuration.SetupConfig();
             ModCompatibility.CheckModCompatibility();
@@ -65,16 +64,57 @@ namespace DD2HUD
             {
                 On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.UpdateSortedNetworkUsersList += SurvivorMannequinDioramaController_UpdateSortedNetworkUsersList;
             }
+            //On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.UpdateMannequins += SurvivorMannequinDioramaController_UpdateMannequins;
+            On.RoR2.UI.MainMenu.MainMenuController.Start += MainMenuController_Start;
+            On.RoR2.SurvivorMannequins.SurvivorMannequinSlotController.OnLoadoutChangedGlobal += UpdateTeamName;
+        }
+
+        private void UpdateTeamName(On.RoR2.SurvivorMannequins.SurvivorMannequinSlotController.orig_OnLoadoutChangedGlobal orig, RoR2.SurvivorMannequins.SurvivorMannequinSlotController self, NetworkUser networkUser)
+        {
+            orig(self, networkUser);
+            if (DD2LobbySetupComponent.instance)
+            {
+                DD2LobbySetupComponent.instance.UpdateTeamName(NetworkUser.instancesList[0].GetSurvivorPreference().survivorIndex);
+            }
+        }
+
+        private void MainMenuController_Start(On.RoR2.UI.MainMenu.MainMenuController.orig_Start orig, RoR2.UI.MainMenu.MainMenuController self)
+        {
+            orig(self);
+            var button = GameObject.Find(@"MainMenu/MENU: More/MoreMenu/Main Panel/InfoPanel/HeaderContainer/Header (JUICED)/HGButton/GenericHeaderButton (Music)");
+            var copy = UnityEngine.Object.Instantiate(button);
+            copy.transform.parent = GameObject.Find(@"MainMenu").transform;
+            copy.GetComponent<ConsoleFunctions>();
+        }
+
+        private void SurvivorMannequinDioramaController_UpdateMannequins(On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.orig_UpdateMannequins orig, RoR2.SurvivorMannequins.SurvivorMannequinDioramaController self)
+        {
+            orig(self);
+            for (int i = 0; i < self.mannequinSlots.Length; i++)
+            {
+                RoR2.SurvivorMannequins.SurvivorMannequinSlotController mannequin = self.mannequinSlots[i];
+                mannequin.gameObject.name = i.ToString();
+                if (i + 1 <= self.mannequinSlots.Length)
+                {
+                    mannequin.name = $"{ i} Dist: {Vector3.Distance(mannequin.transform.position, self.mannequinSlots[i + 1].transform.position)}";
+                }
+            }
         }
 
         private void SurvivorMannequinDioramaController_UpdateSortedNetworkUsersList(On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.orig_UpdateSortedNetworkUsersList orig, RoR2.SurvivorMannequins.SurvivorMannequinDioramaController self)
         {
             orig(self);
             self.sortedNetworkUsers.Clear();
+            //normal order: Host, 4th, 3rd, 2nd????
             for (int i = 0; i < NetworkUser.readOnlyInstancesList.Count; i++)
             {
                 ListUtils.AddIfUnique<NetworkUser>(self.sortedNetworkUsers, NetworkUser.readOnlyInstancesList[i]);
             }
+            //https://forum.unity.com/threads/foreach-in-reverse.54041/#post-2475678
+            /*for (int i = NetworkUser.readOnlyInstancesList.Count - 1; i >= 0 ; i--)
+            {
+                ListUtils.AddIfUnique<NetworkUser>(self.sortedNetworkUsers, NetworkUser.readOnlyInstancesList[i]);
+            }*/
         }
 
         //replacing SelectSurvivor
@@ -84,7 +124,8 @@ namespace DD2HUD
 
             if (DD2LobbySetupComponent.instance)
             {
-                DD2LobbySetupComponent.instance.UpdateTeamName(NetworkUser.instancesList[0].GetSurvivorPreference().survivorIndex);
+                DD2LobbySetupComponent.instance.RepositionHUD();
+                DD2LobbySetupComponent.instance.UpdateSubtitleText();
             }
         }
 
@@ -171,8 +212,6 @@ namespace DD2HUD
         {
             public static DD2LobbyDebugComponent instance;
             public static bool debug = false;
-            public float age = 0;
-            private bool hasSetup = false;
 
             public static string[] debug_characters = new string[]
                 {
@@ -238,6 +277,7 @@ namespace DD2HUD
             {
                 if (!debug) return;
                 List<string> bodyNamesToCopy = new List<string>(DD2LobbyDebugComponent.debug_characters);
+                LocalUserManager.readOnlyLocalUsersList[0].currentNetworkUser.SetBodyPreference(BodyCatalog.FindBodyIndex(bodyNamesToCopy[0]));
                 bodyNamesToCopy.RemoveAt(0);
                 var list = InstanceTracker.GetInstancesList<FakeNetworkUserMarker>();
                 for (int i = 0; i < list.Count; i++)
@@ -245,17 +285,6 @@ namespace DD2HUD
                     FakeNetworkUserMarker fakeNetworkUser = list[i];
                     string newBodyName = bodyNamesToCopy[i];
                     fakeNetworkUser.GetComponent<NetworkUser>().SetBodyPreference(BodyCatalog.FindBodyIndex(newBodyName));
-                }
-            }
-
-            private void FixedUpdate()
-            {
-                if (hasSetup) return;
-                age += Time.fixedDeltaTime;
-                if (age > 0.35f)
-                {
-                    CreateTemporaryNetworkUsers();
-                    hasSetup = true;
                 }
             }
 
@@ -277,6 +306,9 @@ namespace DD2HUD
             public HGTextMeshProUGUI theTMP;
 
             public static DD2LobbySetupComponent instance;
+
+            //For RepositionHUD
+            public HGTextMeshProUGUI subtitleTextTMP;
 
             private void OnEnable()
             {
@@ -308,6 +340,7 @@ namespace DD2HUD
                     {
                         NewSetup();
                         hasSetup = true;
+                        DD2LobbyDebugComponent.instance?.CreateTemporaryNetworkUsers();
                     }
                 }
                 if (!mp_hasSetup)
@@ -328,7 +361,7 @@ namespace DD2HUD
 
             private string GetTeamName2(SurvivorIndex firstSurvivorIndex = SurvivorIndex.None)
             {
-                var networkUsers = NetworkUser.readOnlyLocalPlayersList;
+                var networkUsers = NetworkUser.readOnlyInstancesList;
 
                 List<string> bodyNames = new List<string>();
                 List<BodyIndex> bodyIndices = new List<BodyIndex>();
@@ -482,13 +515,13 @@ namespace DD2HUD
                 //difficultySection.parent = difficultySection.parent.parent; //(needs permanent reference)
 
                 Transform readyPanel = characterSelectController.transform.Find("SafeArea/ReadyPanel");
-                readyPanel.position = new Vector3(80, -45, 100);
+                //readyPanel.position = new Vector3(80, -45, 100);
                 if (!hgTMP)
                 {
                     Transform teamText = UnityEngine.Object.Instantiate(survivorNamePanelClone, readyPanel.parent); //really? you looked 2 in just to look 1 up, when you could just look 1 in???????
                     teamText.GetComponent<UnityEngine.UI.LayoutElement>().enabled = false;
-                    teamText.localPosition = new Vector3(283, -370, 0);
-                    teamText.localScale = Vector3.one * 2.5f;
+                    teamText.localPosition = new Vector3(350, -370, 0);
+                    teamText.localScale = Vector3.one;
                     teamText.name = "TeamText";
                     hgTMP = teamText.Find("SurvivorName").GetComponent<HGTextMeshProUGUI>();
                 }
@@ -506,27 +539,51 @@ namespace DD2HUD
                 }*/
                 leftHandPanel.Find("BlurPanel").gameObject.SetActive(false);
 
-                var readyButton = characterSelectController.readyButton.transform;
-                readyButton.localScale = new Vector3(0.75f, 1f, 1f);
-                readyButton.localPosition = new Vector3(450, -500, 0);
-
-                var survivorName = characterSelectController.survivorName;
+                if (!subtitleTextTMP)
+                {
+                    Transform theText = UnityEngine.Object.Instantiate(survivorNamePanelClone, survivorNamePanel);
+                    theText.localPosition = new Vector3(292, -75, 0);
+                    theText.name = "SurvivorSubtitleText";
+                    subtitleTextTMP = theText.Find("SurvivorName").GetComponent<HGTextMeshProUGUI>();
+                    subtitleTextTMP.text = "";
+                    subtitleTextTMP.transform.localPosition = Vector3.zero;
+                }
 
 
                 if (survivorNamePanelClone)
                     Destroy(survivorNamePanelClone.gameObject);
                 survivorChoiceGrid.gameObject.SetActive(true);
+
+                RepositionHUD();
             }
 
-            private void RepossitionHUD()
+            public void RepositionHUD()
             {
+                var readyButton = characterSelectController.readyButton.transform;
+                readyButton.localScale = new Vector3(0.75f, 1f, 1f);
+                readyButton.localPosition = new Vector3(-150, -50, 0); //450, -500, 0
+            }
 
+            public void UpdateSubtitleText()
+            {
+                if (subtitleTextTMP)
+                {
+                    //the following 3 lines are copied from cahracterselcetcontroller.rebuildlocal
+                    //so its oneyl a small repeat
+                    LocalUser localUser = characterSelectController.localUser;
+                    NetworkUser networkUser = localUser?.currentNetworkUser;
+                    if (!networkUser) return;
+                    SurvivorDef survivorDef = networkUser ? networkUser.GetSurvivorPreference() : null;
+                    CharacterSelectController.BodyInfo bodyInfo = new CharacterSelectController.BodyInfo(SurvivorCatalog.GetBodyIndexFromSurvivorIndex(survivorDef ? survivorDef.survivorIndex : SurvivorIndex.None));
+
+                    subtitleTextTMP.text = bodyInfo.bodyPrefabBodyComponent ? Language.GetString(bodyInfo.bodyPrefabBodyComponent.subtitleNameToken) : String.Empty;
+                }
             }
 
             private void RepositionCharacterPads()
             {
                 if (!cfgModifyCharacterPosition.Value) return;
-                if (!ENABLEDEBUGMODE && NetworkUser.readOnlyLocalPlayersList.Count <= 1)
+                if (!ENABLEDEBUGMODE && NetworkUser.readOnlyInstancesList.Count <= 1)
                 {
                     return;
                 }
