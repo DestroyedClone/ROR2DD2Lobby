@@ -10,6 +10,7 @@
 	
 	<ItemGroup>
 	  <Compile Remove="DD2Lobby_SOTV.cs" />
+	  <Compile Remove="UnusedBackup.cs" />
 	</ItemGroup>
 	
 	<ItemGroup>

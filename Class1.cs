@@ -15,6 +15,7 @@ using static DD2HUD.Assets;
 using static DD2HUD.Configuration;
 using static DD2HUD.ModCompatibility;
 using System;
+using System.Diagnostics;
 
 [module: UnverifiableCode]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -43,7 +44,7 @@ namespace DD2HUD
             _config = Config;
             _logger = Logger;
 
-            On.RoR2.Networking.NetworkManagerSystemSteam.OnClientConnect += (s, u, t) => { };
+            //On.RoR2.Networking.NetworkManagerSystemSteam.OnClientConnect += (s, u, t) => { };
             if (ENABLEDEBUGMODE)
             {
                 _logger.LogWarning("Debug mode is on, disable before compiling and uploading!");
@@ -59,8 +60,42 @@ namespace DD2HUD
             {
                 On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.UpdateSortedNetworkUsersList += SortMannequinsByRealOrder;
             }
-            On.RoR2.UI.MainMenu.MainMenuController.Update += MainMenuController_Update;
+            //On.RoR2.UI.MainMenu.MainMenuController.Update += MainMenuController_Update;
             On.RoR2.SurvivorMannequins.SurvivorMannequinSlotController.OnLoadoutChangedGlobal += UpdateTeamName;
+
+            On.RoR2.PreGameRuleVoteController.ClientTransmitVotesToServer += InitiateChanges;
+
+            On.RoR2.Chat.AddMessage_ChatMessageBase += Chat_AddMessage_ChatMessageBase;
+
+            On.RoR2.NetworkUser.SetBodyPreference += NetworkUser_SetBodyPreference;
+        }
+
+        private void NetworkUser_SetBodyPreference(On.RoR2.NetworkUser.orig_SetBodyPreference orig, NetworkUser self, BodyIndex newBodyIndexPreference)
+        {
+            orig(self, newBodyIndexPreference);
+            if (DD2LobbySetupComponent.instance)
+                DD2LobbySetupComponent.instance.UpdateReconfigurations();
+        }
+
+        private void Chat_AddMessage_ChatMessageBase(On.RoR2.Chat.orig_AddMessage_ChatMessageBase orig, ChatMessageBase message)
+        {
+            orig(message);
+            if (message is Chat.PlayerChatMessage)
+            {
+                if (DD2LobbySetupComponent.instance)
+                {
+                    DD2LobbySetupComponent.instance.UpdateReconfigurations();
+                }
+            }
+        }
+
+        private void InitiateChanges(On.RoR2.PreGameRuleVoteController.orig_ClientTransmitVotesToServer orig, PreGameRuleVoteController self)
+        {
+            orig(self);
+            if (DD2LobbySetupComponent.instance)
+            {
+                DD2LobbySetupComponent.instance.UpdateReconfigurations();
+            }
         }
 
         private void AddComponentToCharSelectController(On.RoR2.UI.CharacterSelectController.orig_Awake orig, CharacterSelectController self)
@@ -104,7 +139,6 @@ namespace DD2HUD
         {
             orig(self);
             self.sortedNetworkUsers.Clear();
-            //normal order: Host, 4th, 3rd, 2nd????
             for (int i = 0; i < NetworkUser.readOnlyInstancesList.Count; i++)
             {
                 ListUtils.AddIfUnique<NetworkUser>(self.sortedNetworkUsers, NetworkUser.readOnlyInstancesList[i]);
@@ -175,7 +209,6 @@ namespace DD2HUD
             {
                 instance = null;
             }
-
 
             public ulong GetNetworkName(string bodyName)
             {
@@ -275,6 +308,11 @@ namespace DD2HUD
 
             private void UserProfile_onLoadoutChangedGlobal(UserProfile obj)
             { instance.UpdateReconfigurations(); }
+
+            private void Start()
+            {
+                characterSelectController = gameObject.GetComponent<CharacterSelectController>();
+            }
 
             private void FixedUpdate()
             {
@@ -487,14 +525,14 @@ namespace DD2HUD
                     Destroy(survivorNamePanelClone.gameObject);
                 survivorChoiceGrid.gameObject.SetActive(true);
 
-                //RepositionHUD();
+                RepositionHUD();
             }
 
             public void RepositionHUD()
             {
-                var readyButton = characterSelectController.readyButton.transform;
-                readyButton.localScale = new Vector3(0.75f, 1f, 1f);
-                readyButton.localPosition = new Vector3(-150, -50, 0); //450, -500, 0
+                var readyButton = characterSelectController.readyButton.transform.parent;
+                readyButton.localScale = new Vector3(1f, 1f, 1f);
+                readyButton.localPosition = new Vector3(500, -500, 0); //450, -500, 0
             }
 
             public void UpdateSubtitleText()
@@ -539,7 +577,6 @@ namespace DD2HUD
 
             public void UpdateReconfigurations()
             {
-                characterSelectController = gameObject.GetComponent<CharacterSelectController>();
                 InitialHUDSetup();
                 RepositionCharacterPads();
                 UpdateTeamName();
@@ -547,13 +584,14 @@ namespace DD2HUD
 
             public void UpdateTeamName()
             {
-                var firstNetworkUser = NetworkUser.instancesList[0];
+                var firstNetworkUser = NetworkUser.readOnlyInstancesList[0];
                 if (firstNetworkUser)
                 {
                     var survivorPreferenceDef = firstNetworkUser.GetSurvivorPreference();
                     if (survivorPreferenceDef)
                     {
                         SetTeamText(GetTeamNameFromSurvivorIndex(survivorPreferenceDef.survivorIndex));
+                        return;
                     }
                 }
                 SetTeamText(String.Empty);
@@ -561,6 +599,22 @@ namespace DD2HUD
 
             public void SetTeamText(string teamName)
             {
+                //debugging
+                /*string users = string.Empty;
+                if (NetworkUser.readOnlyInstancesList.Count > 0)
+                {
+                    for (int i = 0; i < NetworkUser.readOnlyInstancesList.Count; i++)
+                    {
+                        var survivorPreferenceDef = NetworkUser.readOnlyInstancesList[i].GetSurvivorPreference();
+                        users += $"[{i}] + {(survivorPreferenceDef ? survivorPreferenceDef.cachedName : "Empty SurvivorDef")} ";
+                    }
+                } else
+                {
+                    users = "None";
+                }
+
+                UnityEngine.Debug.Log($"hgTMP exists: {hgTMP} | teamName: {teamName} | Users: {users}");
+                new StackTrace();*/
                 if (!hgTMP) return;
                 hgTMP.enabled = false;
                 hgTMP.text = teamName;
