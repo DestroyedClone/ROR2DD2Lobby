@@ -35,6 +35,7 @@ namespace DD2HUD
         public static Dictionary<BodyIndex[], string> bodyIndices_to_teamName = new Dictionary<BodyIndex[], string>();
 
         public static readonly bool ENABLEDEBUGMODE = false;
+        public static readonly bool ENABLEMULTIPLAYERDEBUGMODE = false;
 
         internal static ConfigFile _config;
         internal static ManualLogSource _logger;
@@ -44,7 +45,8 @@ namespace DD2HUD
             _config = Config;
             _logger = Logger;
 
-            //On.RoR2.Networking.NetworkManagerSystemSteam.OnClientConnect += (s, u, t) => { };
+            if (ENABLEMULTIPLAYERDEBUGMODE)
+                On.RoR2.Networking.NetworkManagerSystemSteam.OnClientConnect += (s, u, t) => { };
             if (ENABLEDEBUGMODE)
             {
                 _logger.LogWarning("Debug mode is on, disable before compiling and uploading!");
@@ -60,7 +62,8 @@ namespace DD2HUD
             {
                 On.RoR2.SurvivorMannequins.SurvivorMannequinDioramaController.UpdateSortedNetworkUsersList += SortMannequinsByRealOrder;
             }
-            //On.RoR2.UI.MainMenu.MainMenuController.Update += MainMenuController_Update;
+            if (ENABLEMULTIPLAYERDEBUGMODE)
+                On.RoR2.UI.MainMenu.MainMenuController.Update += MainMenuController_Update;
             On.RoR2.SurvivorMannequins.SurvivorMannequinSlotController.OnLoadoutChangedGlobal += UpdateTeamName;
 
             On.RoR2.PreGameRuleVoteController.ClientTransmitVotesToServer += InitiateChanges;
@@ -191,7 +194,6 @@ namespace DD2HUD
         private class DD2LobbyDebugComponent : MonoBehaviour
         {
             public static DD2LobbyDebugComponent instance;
-            public static bool debug = false;
 
             public static string[] debug_characters = new string[]
                 {
@@ -231,7 +233,7 @@ namespace DD2HUD
 
             public void CreateTemporaryNetworkUsers()
             {
-                if (!debug) return;
+                if (!ENABLEDEBUGMODE) return;
                 GameObject meUser = LocalUserManager.GetFirstLocalUser().currentNetworkUser.gameObject;
                 List<string> bodyNamesToCopy = new List<string>(DD2LobbyDebugComponent.debug_characters);
                 bodyNamesToCopy.RemoveAt(0);
@@ -254,7 +256,7 @@ namespace DD2HUD
 
             public void UpdateTemporaryNetworkUsers()
             {
-                if (!debug) return;
+                if (!ENABLEDEBUGMODE) return;
                 List<string> bodyNamesToCopy = new List<string>(DD2LobbyDebugComponent.debug_characters);
                 LocalUserManager.readOnlyLocalUsersList[0].currentNetworkUser.SetBodyPreference(BodyCatalog.FindBodyIndex(bodyNamesToCopy[0]));
                 bodyNamesToCopy.RemoveAt(0);
