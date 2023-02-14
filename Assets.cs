@@ -135,7 +135,7 @@ namespace DD2HUD
             { new string[]{ "RegigigasPlayerBody", "RegigigasPlayerBody", "RegigigasPlayerBody", "RegigigasPlayerBody" }, "4REGIGIGAS" },
 
             //Deputy
-            { new string[]{ "DeputyBody", "DeputyBody", "DeputyBody", "DeputyBody" }, "4DeputyBody" },
+            { new string[]{ "DeputyBody", "DeputyBody", "DeputyBody", "DeputyBody" }, "4DEPUTYBODY" },
             { new string[]{ "DeputyBody", "DeputyBody", "Bandit2Body", "Bandit2Body" }, "2DEPUTY2BANDIT2SHARED" },
             { new string[]{ "Bandit2Body", "Bandit2Body", "DeputyBody", "DeputyBody" }, "2DEPUTY2BANDIT2SHARED" },
             { new string[]{ "DeputyBody", "CommandoBody", "MinerBody", "MinerBody" }, "STARBOUND" },
