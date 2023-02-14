@@ -5,6 +5,7 @@ using HG;
 using R2API.Utils;
 using RoR2;
 using RoR2.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security;
@@ -14,8 +15,6 @@ using UnityEngine.UI;
 using static DD2HUD.Assets;
 using static DD2HUD.Configuration;
 using static DD2HUD.ModCompatibility;
-using System;
-using System.Diagnostics;
 
 [module: UnverifiableCode]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -153,7 +152,6 @@ namespace DD2HUD
             }*/
         }
 
-
         private void CharacterSelectController_OnDisable(On.RoR2.UI.CharacterSelectController.orig_OnDisable orig, CharacterSelectController self)
         {
             orig(self);
@@ -179,7 +177,6 @@ namespace DD2HUD
             {
                 DD2LobbySetupComponent.instance.UpdateTeamName(NetworkUser.instancesList[0].GetSurvivorPreference().survivorIndex);
             }*/
-
         }
 
         public class FakeNetworkUserMarker : MonoBehaviour
@@ -207,6 +204,7 @@ namespace DD2HUD
             {
                 instance = this;
             }
+
             public void OnDisable()
             {
                 instance = null;
@@ -268,7 +266,6 @@ namespace DD2HUD
                     fakeNetworkUser.GetComponent<NetworkUser>().SetBodyPreference(BodyCatalog.FindBodyIndex(newBodyName));
                 }
             }
-
         }
 
         public class DD2LobbySetupComponent : MonoBehaviour
@@ -393,7 +390,7 @@ namespace DD2HUD
                         key[3] == bodyNames[3]
                         )
                     {
-                        return Language.GetString("DD2LOBBY_"+entry.Value);
+                        return Language.GetString("DD2LOBBY_" + entry.Value);
                     }
                 }
                 return string.Empty;
@@ -418,14 +415,12 @@ namespace DD2HUD
                 survivorInfoPanel.GetComponent<VerticalLayoutGroup>().enabled = false;
                 survivorInfoPanel.transform.position = new Vector3(30, 32.14879f, 100);
 
-
                 Transform survivorNamePanel = survivorInfoPanel.Find("SurvivorNamePanel");
                 Transform survivorNamePanelClone = null;
                 if (!theTMP || !hgTMP)
                     survivorNamePanelClone = Instantiate(survivorNamePanel, characterSelectController.transform);
                 //SkillScrollContainer is missing so
                 //ContentPanel (Overview, Skills, Loadout)/SkillScrollContainer/DescriptionPanel, Skill
-
 
                 /* NORMALLY its: ContentPanel (Overview, Skills, Loadout)/SkillPanel/DescriptionPanel, Skill
                  * but with ScrollableLobbything its:
@@ -436,7 +431,6 @@ namespace DD2HUD
                  * ContentPanel (Overview, Skills, Loadout)/OverviewScrollPanel/DescriptionPanel, Skill
                  */
 
-
                 /*var skillDescPanel = survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/SkillScrollContainer/DescriptionPanel, Skill");
                 if (skillDescPanel && !skillDescPanel.GetComponent<DD2LobbyDescriptionTracksCursor>())
                     skillDescPanel.gameObject.AddComponent<DD2LobbyDescriptionTracksCursor>().lobbyDescTransform = skillDescPanel;*/
@@ -446,7 +440,8 @@ namespace DD2HUD
                 {
                     //skillDescPanel = survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/OverviewScrollPanel/DescriptionPanel, Skill");
                     skillDescPanel = survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/SkillScrollContainer/DescriptionPanel, Skill");
-                } else
+                }
+                else
                 {
                     skillDescPanel = survivorInfoPanel.Find("ContentPanel (Overview, Skills, Loadout)/SkillPanel/DescriptionPanel, Skill");
                 }
@@ -484,7 +479,6 @@ namespace DD2HUD
                 ruleVerticalLayoutVertical.Find("Viewport/Content/RulebookCategoryPrefab(Clone)/Header").gameObject.SetActive(false);
                 //SOTV: Has RuleCategoryController
 
-
                 //difficultySection.parent = difficultySection.parent.parent; //(needs permanent reference)
 
                 Transform readyPanel = characterSelectController.transform.Find("SafeArea/ReadyPanel");
@@ -521,7 +515,6 @@ namespace DD2HUD
                     subtitleTextTMP.text = "";
                     subtitleTextTMP.transform.localPosition = Vector3.zero;
                 }
-
 
                 if (survivorNamePanelClone)
                     Destroy(survivorNamePanelClone.gameObject);
