@@ -135,10 +135,10 @@ namespace DD2HUD
             { new string[]{ "RegigigasPlayerBody", "RegigigasPlayerBody", "RegigigasPlayerBody", "RegigigasPlayerBody" }, "4REGIGIGAS" },
 
             //Deputy
-            { new string[]{ "Deputy", "Deputy", "Deputy", "Deputy" }, "4DEPUTY" },
-            { new string[]{ "Deputy", "Deputy", "Bandit2Body", "Bandit2Body" }, "2DEPUTY2BANDIT2SHARED" },
-            { new string[]{ "Bandit2Body", "Bandit2Body", "Deputy", "Deputy" }, "2DEPUTY2BANDIT2SHARED" },
-            { new string[]{ "Deputy", "CommandoBody", "MinerBody", "MinerBody" }, "STARBOUND" },
+            { new string[]{ "DeputyBody", "DeputyBody", "DeputyBody", "DeputyBody" }, "4DeputyBody" },
+            { new string[]{ "DeputyBody", "DeputyBody", "Bandit2Body", "Bandit2Body" }, "2DEPUTY2BANDIT2SHARED" },
+            { new string[]{ "Bandit2Body", "Bandit2Body", "DeputyBody", "DeputyBody" }, "2DEPUTY2BANDIT2SHARED" },
+            { new string[]{ "DeputyBody", "CommandoBody", "MinerBody", "MinerBody" }, "STARBOUND" },
 
             //Deku
             { new string[]{ "DekuBody", "DekuBody", "DekuBody", "DekuBody" }, "4DEKU" },
@@ -167,9 +167,9 @@ namespace DD2HUD
 
             //Dancer
             { new string[] { "DancerBody", "DancerBody", "DancerBody", "DancerBody" }, "4DANCER" },
-            { new string[] { "DancerBody", "DancerBody", "Deputy", "Deputy" }, "2DANCER2DEPUTY" },
-            { new string[] { "DancerBody", "Deputy", "DancerBody", "Deputy" }, "DANCERDEPUTYDANCERDEPUTY" },
-            { new string[] { "DancerBody", "Deputy", "HuntressBody", "HuntressBody" }, "DANCERDANCERHUNTRESSHUNTRESS" },
+            { new string[] { "DancerBody", "DancerBody", "DeputyBody", "DeputyBody" }, "2DANCER2DeputyBody" },
+            { new string[] { "DancerBody", "DeputyBody", "DancerBody", "DeputyBody" }, "DANCERDEPUTYDANCERDeputyBody" },
+            { new string[] { "DancerBody", "DeputyBody", "HuntressBody", "HuntressBody" }, "DANCERDANCERHUNTRESSHUNTRESS" },
             { new string[] { "DancerBody", "ToolbotBody", "HANDOverclockedBody", "EngiBody" }, "TOOLTIME" },
 
         };
