@@ -6,6 +6,8 @@
 - Added a subtitle underneath the username
 - Moved 'Ready' button so that the team text doesn't overlap it as much
 - Adjusted team text so that it wraps instead of overflows
+- Synced team names between players
+- Added French translation (thanks Cobalt-Kitsune)
 
 `1.0.0` - Release
 
