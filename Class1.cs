@@ -50,6 +50,7 @@ namespace DD2HUD
             {
                 _logger.LogWarning("Debug mode is on, disable before compiling and uploading!");
             }
+            Assets.Init();
             Configuration.SetupConfig();
             ModCompatibility.CheckModCompatibility();
 
@@ -342,12 +343,8 @@ namespace DD2HUD
 
                 List<string> bodyNames = new List<string>();
                 List<BodyIndex> bodyIndices = new List<BodyIndex>();
-                if (!DD2HUD.Main.ENABLEDEBUGMODE)
+                if (!ENABLEDEBUGMODE)
                 {
-                    if (networkUsers.Count <= 3)
-                    {
-                        return string.Empty;
-                    }
                     foreach (var networkUser in networkUsers)
                     {
                         bodyIndices.Add(networkUser.NetworkbodyIndexPreference);
@@ -374,26 +371,8 @@ namespace DD2HUD
                     Debug.Log(output);
                 }*/
 
-                if (ENABLEDEBUGMODE)
-                    foreach (var name in bodyNames)
-                    {
-                        _logger.LogMessage(name);
-                    }
-
-                foreach (var entry in characterNames_to_teamName)
-                {
-                    var key = entry.Key;
-                    if (
-                        key[0] == bodyNames[0] &&
-                        key[1] == bodyNames[1] &&
-                        key[2] == bodyNames[2] &&
-                        key[3] == bodyNames[3]
-                        )
-                    {
-                        return Language.GetString("DD2LOBBY_" + entry.Value);
-                    }
-                }
-                return string.Empty;
+                if (ENABLEDEBUGMODE) foreach (var name in bodyNames) _logger.LogMessage(name);
+                return GetKey(bodyNames);
             }
 
             //public Transform difficultySection;
