@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HG;
@@ -29,6 +30,7 @@ namespace DD2HUD
     //[BepInDependency(R2API.R2API.PluginGUID, R2API.R2API.PluginVersion)]
     [NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
     [BepInDependency("com.KingEnderBrine.ScrollableLobbyUI", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.KingEnderBrine.RandomCharacterSelection", BepInDependency.DependencyFlags.SoftDependency)]
     public class Main : BaseUnityPlugin
     {
         public static Dictionary<BodyIndex[], string> bodyIndices_to_teamName = new Dictionary<BodyIndex[], string>();
@@ -107,6 +109,11 @@ namespace DD2HUD
             self.gameObject.AddComponent<DD2LobbySetupComponent>();
             if (ENABLEDEBUGMODE)
                 self.gameObject.AddComponent<DD2LobbyDebugComponent>();
+            if (Chainloader.PluginInfos.ContainsKey("com.KingEnderBrine.RandomCharacterSelection"))
+            {
+                GameObject obj = GameObject.Find("CharacterSelectUI/SafeArea/RandomizePanel(Clone)");
+                if (obj != null) obj.transform.position = new Vector3(-2f, -34.73f, 100);
+            }
         }
 
         //replacing SelectSurvivor

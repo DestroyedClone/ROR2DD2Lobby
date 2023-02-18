@@ -39,4 +39,10 @@
 		<PackageReference Include="R2API" Version="5.0.3" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Reference Include="RandomCharacterSelection">
+	    <HintPath>libs\RandomCharacterSelection-nstrip.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+	
 </Project>
